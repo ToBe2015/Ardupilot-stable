@@ -196,6 +196,12 @@ void Copter::init_ardupilot()
     ahrs.set_optflow(&optflow);
 #endif
 
+    // init Location class
+    Location_Class::set_ahrs(&ahrs);
+#if AP_TERRAIN_AVAILABLE
+    Location_Class::set_terrain(&terrain);
+#endif
+
     // initialise attitude and position controllers
     attitude_control.set_dt(MAIN_LOOP_SECONDS);
     pos_control.set_dt(MAIN_LOOP_SECONDS);
