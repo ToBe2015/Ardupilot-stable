@@ -5,6 +5,7 @@
 #include <AP_Common/AP_Common.h>
 #include <AP_Param/AP_Param.h>
 #include <AP_Math/AP_Math.h>
+#include <AP_Common/Location.h>
 #include <AP_InertialNav/AP_InertialNav.h>     // Inertial Navigation library
 #include <AC_AttitudeControl/AC_PosControl.h>      // Position control library
 #include <AC_AttitudeControl/AC_AttitudeControl.h> // Attitude control library
@@ -135,10 +136,12 @@ public:
     const Vector3f &get_wp_destination() const { return _destination; }
 
     /// set_wp_destination waypoint using position vector (distance from home in cm)
-    void set_wp_destination(const Vector3f& destination);
+    ///     use_terrain_alt should be true if destination.z is a desired altitude above terrain
+    void set_wp_destination(const Vector3f& destination, bool use_terrain_alt = false);
 
     /// set_wp_origin_and_destination - set origin and destination waypoints using position vectors (distance from home in cm)
-    void set_wp_origin_and_destination(const Vector3f& origin, const Vector3f& destination);
+    ///     use_terrain_alt should be true if destination.z is a desired altitude above terrain
+    void set_wp_origin_and_destination(const Vector3f& origin, const Vector3f& destination, bool use_terrain_alt = false);
 
     /// shift_wp_origin_to_current_pos - shifts the origin and destination so the origin starts at the current position
     ///     used to reset the position just before takeoff
@@ -224,6 +227,14 @@ public:
     /// advance_wp_target_along_track - move target location along track from origin to destination
     void advance_wp_target_along_track(float dt);
 
+    ///
+    /// terrain handling
+    ///
+
+    // convert NEU position's altitude between ekf alt and terrain alt
+    //void convert_ekf_origin_alt_to_terrain_alt(Vector3f& position);
+    //void convert_terrain_alt_to_ekf_origin_alt(Vector3f& position);
+
     static const struct AP_Param::GroupInfo var_info[];
 
 protected:
@@ -268,6 +279,9 @@ protected:
     /// calc_spline_pos_vel - update position and velocity from given spline time
     /// 	relies on update_spline_solution being called since the previous
     void calc_spline_pos_vel(float spline_time, Vector3f& position, Vector3f& velocity);
+
+    // get terrain altitude difference (in cm) between at current position and ekf origin (+ve means current terrain higher than at origin)
+    bool get_terrain_offset(const Vector3f &pos, float& offset_cm);
 
     // references to inertial nav and ahrs libraries
     const AP_InertialNav&   _inav;
@@ -315,5 +329,10 @@ protected:
     Vector3f    _hermite_spline_solution[4]; // array describing spline path between origin and destination
     float       _spline_vel_scaler;	    //
     float       _yaw;                   // heading according to yaw
+
+    // terrain following variables
+    bool        _use_terrain_alt = false;   // true if destination.z is an alt-above-terrain, false if alt-above-ekf-origin
+    bool        _origin_terrain_alt_set = false;
+    float       _origin_terrain_alt = 0.0f;
 };
 #endif	// AC_WPNAV_H

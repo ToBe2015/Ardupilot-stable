@@ -405,8 +405,9 @@ void AC_WPNav::set_speed_xy(float speed_cms)
     }
 }
 
-/// set_destination - set destination using cm from home
-void AC_WPNav::set_wp_destination(const Vector3f& destination)
+/// set_wp_destination waypoint using position vector (distance from home in cm)
+///     use_terrain_alt should be true if destination.z is a desired altitude above terrain
+void AC_WPNav::set_wp_destination(const Vector3f& destination, bool use_terrain_alt)
 {
 	Vector3f origin;
 
@@ -420,15 +421,17 @@ void AC_WPNav::set_wp_destination(const Vector3f& destination)
     }
 
     // set origin and destination
-    set_wp_origin_and_destination(origin, destination);
+    set_wp_origin_and_destination(origin, destination, use_terrain_alt);
 }
 
 /// set_origin_and_destination - set origin and destination waypoints using position vectors (distance from home in cm)
-void AC_WPNav::set_wp_origin_and_destination(const Vector3f& origin, const Vector3f& destination)
+///     use_terrain_alt should be true if destination.z is a desired altitude above terrain
+void AC_WPNav::set_wp_origin_and_destination(const Vector3f& origin, const Vector3f& destination, bool use_terrain_alt)
 {
     // store origin and destination locations
     _origin = origin;
     _destination = destination;
+    _use_terrain_alt = use_terrain_alt;
     Vector3f pos_delta = _destination - _origin;
 
     _track_length = pos_delta.length(); // get track length
@@ -514,7 +517,18 @@ void AC_WPNav::advance_wp_target_along_track(float dt)
 
     // get current location
     Vector3f curr_pos = _inav.get_position();
+
+    // get terrain altitude offset for origin and current position (i.e. change in terrain altitude from a position vs ekf origin)
+    float curr_terr_offset = 0.0f;
+    float orig_terr_offset = 0.0f;
+    if (!get_terrain_offset(curr_pos, curr_terr_offset) || !get_terrain_offset(_origin, orig_terr_offset)) {
+        return;
+    }
+
     Vector3f curr_delta = curr_pos - _origin;
+    if (_use_terrain_alt) {
+        curr_delta.z -= (curr_terr_offset - orig_terr_offset);
+    }
 
     // calculate how far along the track we are
     track_covered = curr_delta.x * _pos_delta_unit.x + curr_delta.y * _pos_delta_unit.y + curr_delta.z * _pos_delta_unit.z;
@@ -613,7 +627,12 @@ void AC_WPNav::advance_wp_target_along_track(float dt)
     }
 
     // recalculate the desired position
-    _pos_control.set_pos_target(_origin + _pos_delta_unit * _track_desired);
+    Vector3f final_target = _origin + _pos_delta_unit * _track_desired;
+    // convert final_target.z to appropriate altitude type
+    if (_use_terrain_alt) {
+        final_target.z += (curr_terr_offset - orig_terr_offset);
+    }
+    _pos_control.set_pos_target(final_target);
 
     // check if we've reached the waypoint
     if( !_flags.reached_destination ) {
@@ -624,6 +643,9 @@ void AC_WPNav::advance_wp_target_along_track(float dt)
             }else{
                 // regular waypoints also require the copter to be within the waypoint radius
                 Vector3f dist_to_dest = curr_pos - _destination;
+                if (_use_terrain_alt) {
+                    dist_to_dest.z -= (curr_terr_offset - orig_terr_offset);
+                }
                 if( dist_to_dest.length() <= _wp_radius_cm ) {
                     _flags.reached_destination = true;
                 }
@@ -631,6 +653,24 @@ void AC_WPNav::advance_wp_target_along_track(float dt)
         }
     }
 }
+
+/*
+// convert NEU position's altitude between ekf alt and terrain alt
+void AC_WPNav::convert_ekf_origin_alt_to_terrain_alt(Vector3f& position)
+{
+    Location ekf_origin;
+
+    // convert position to location
+    Location loc = location_offset(_inav.get_origin(), position.x, position.y);
+
+    // get terrain alt
+    conv
+}
+
+void AC_WPNav::convert_terrain_alt_to_ekf_origin_alt(Vector3f& position)
+{
+}
+*/
 
 /// get_wp_distance_to_destination - get horizontal distance to destination in cm
 float AC_WPNav::get_wp_distance_to_destination() const
@@ -1001,6 +1041,33 @@ void AC_WPNav::calc_spline_pos_vel(float spline_time, Vector3f& position, Vector
                _hermite_spline_solution[3] * 3.0f * spline_time_sqrd;
 }
 
+// get terrain altitude difference (in cm) between a position and the ekf origin (+ve means current terrain higher than at origin)
+bool AC_WPNav::get_terrain_offset(const Vector3f &pos, float& offset_cm)
+{
+    // initialise ekf origin terrain alt
+    if (!_origin_terrain_alt_set) {
+        Location_Class ekforigin = _inav.get_origin();
+        int32_t talt_cm;
+        if (ekforigin.get_alt_cm(Location_Class::ALT_FRAME_ABOVE_TERRAIN, talt_cm)) {
+            _origin_terrain_alt_set = true;
+            _origin_terrain_alt = talt_cm;
+            hal.console->printf_P("EKF Origin Terrain Alt:%4.2f\n", (double)_origin_terrain_alt);
+        } else {
+            return false;
+        }
+    }
+
+    // calculate current position's terrain altitude offset above EKF origin's terrain altitude
+    Location_Class curr_loc(pos);
+    curr_loc.set_alt(0,Location_Class::ALT_FRAME_ABOVE_ORIGIN);
+    int32_t pos_terr_alt_cm;
+    if (curr_loc.get_alt_cm(Location_Class::ALT_FRAME_ABOVE_TERRAIN, pos_terr_alt_cm)) {
+        offset_cm = -pos_terr_alt_cm - _origin_terrain_alt;
+        return true;
+    }
+
+    return false;
+}
 
 ///
 /// shared methods
