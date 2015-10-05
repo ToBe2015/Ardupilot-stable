@@ -91,14 +91,31 @@ void Copter::auto_run()
 }
 
 // auto_takeoff_start - initialises waypoint controller to implement take-off
-void Copter::auto_takeoff_start(float final_alt_above_home)
+void Copter::auto_takeoff_start(const Location& dest_loc)
 {
     auto_mode = Auto_TakeOff;
 
-    // initialise wpnav destination
-    Vector3f target_pos = inertial_nav.get_position();
-    target_pos.z = pv_alt_above_origin(final_alt_above_home);
-    wp_nav.set_wp_destination(target_pos);
+    // convert location to class
+    Location_Class dest(dest_loc);
+
+    // set horizontal target
+    dest.lat = current_loc.lat;
+    dest.lng = current_loc.lng;
+
+    // ensure reasonable altitude
+    int32_t alt_target;
+    if (dest.get_alt_cm(Location_Class::ALT_FRAME_ABOVE_HOME, alt_target)) {
+        if (alt_target < current_loc.alt) {
+            dest.set_alt(current_loc.alt, Location_Class::ALT_FRAME_ABOVE_HOME);
+        }
+        // Note: if taking off from below home this could cause a climb to an unexpectedly high altitude
+        if (alt_target < 100) {
+            dest.set_alt(100, Location_Class::ALT_FRAME_ABOVE_HOME);
+        }
+    }
+
+    // set waypoint controller target
+    wp_nav.set_wp_destination(dest);
 
     // initialise yaw
     set_auto_yaw_mode(AUTO_YAW_HOLD);
