@@ -165,38 +165,11 @@ void Copter::auto_wp_start(const Location& dest_loc)
 {
     auto_mode = Auto_WP;
 
-    // convert location structure to location class
-    Location_Class loc(dest_loc);
-
-    // are we using terrain based altitudes?
-    bool terrain_alt = false;
-
-    // convert location to neu vector3f
-    Vector3f dest_neu;
-    if (!loc.get_vector_from_origin_NEU(dest_neu)) {
-        // what should we do if we fail?
-    }
-
-    // convert altitude
-    switch (loc.get_alt_frame()) {
-        case Location_Class::ALT_FRAME_ABOVE_TERRAIN:
-            terrain_alt = true;
-            int32_t terr_alt;
-            loc.get_alt_cm(Location_Class::ALT_FRAME_ABOVE_TERRAIN, terr_alt);
-            dest_neu.z = terr_alt;
-            break;
-        default:
-            {
-            terrain_alt = false;
-            int32_t temp_alt;
-            loc.get_alt_cm(Location_Class::ALT_FRAME_ABOVE_ORIGIN, temp_alt);
-            dest_neu.z = temp_alt;
-            }
-            break;
-    }
-
     // send target to waypoint controller
-    wp_nav.set_wp_destination(dest_neu, terrain_alt);
+    if (!wp_nav.set_wp_destination(Location_Class(dest_loc))) {
+        // what should we do if we fail?
+        cliSerial->printf("Failed to set waypoint target\n");
+    }
 
     // initialise yaw
     // To-Do: reset the yaw only when the previous navigation command is not a WP.  this would allow removing the special check for ROI
