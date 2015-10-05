@@ -135,6 +135,10 @@ public:
     /// get_wp_destination waypoint using position vector (distance from home in cm)
     const Vector3f &get_wp_destination() const { return _destination; }
 
+    /// set_wp_destination waypoint using location class
+    ///     returns false if conversion from location to vector from ekf origin cannot be calculated
+    bool set_wp_destination(const Location_Class& destination);
+
     /// set_wp_destination waypoint using position vector (distance from home in cm)
     ///     use_terrain_alt should be true if destination.z is a desired altitude above terrain
     void set_wp_destination(const Vector3f& destination, bool use_terrain_alt = false);

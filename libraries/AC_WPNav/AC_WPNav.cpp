@@ -405,6 +405,41 @@ void AC_WPNav::set_speed_xy(float speed_cms)
     }
 }
 
+/// set_wp_destination waypoint using location class
+///     returns false if conversion from location to vector from ekf origin cannot be calculated
+bool AC_WPNav::set_wp_destination(const Location_Class& destination)
+{
+    // convert location to NEU vector3f
+    Vector3f dest_neu;
+    if (!destination.get_vector_from_origin_NEU(dest_neu)) {
+        return false;
+    }
+
+    // convert altitude
+    bool terrain_alt = false;
+    switch (destination.get_alt_frame()) {
+        case Location_Class::ALT_FRAME_ABOVE_TERRAIN:
+            terrain_alt = true;
+            int32_t terr_alt;
+            destination.get_alt_cm(Location_Class::ALT_FRAME_ABOVE_TERRAIN, terr_alt);
+            dest_neu.z = terr_alt;
+            break;
+        default:
+            {
+            terrain_alt = false;
+            int32_t temp_alt;
+            destination.get_alt_cm(Location_Class::ALT_FRAME_ABOVE_ORIGIN, temp_alt);
+            dest_neu.z = temp_alt;
+            }
+            break;
+    }
+
+    // set target as vector from EKF origin
+    set_wp_destination(dest_neu, terrain_alt);
+
+    return true;
+}
+
 /// set_wp_destination waypoint using position vector (distance from home in cm)
 ///     use_terrain_alt should be true if destination.z is a desired altitude above terrain
 void AC_WPNav::set_wp_destination(const Vector3f& destination, bool use_terrain_alt)
