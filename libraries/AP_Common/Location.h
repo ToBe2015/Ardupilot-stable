@@ -27,13 +27,6 @@ public:
         ALT_FRAME_ABOVE_TERRAIN = 3
     };
 
-    /// enumeration of possible horizontal frame types
-    enum HORIZ_FRAME {
-        HORIZ_FRAME_UNSET = 0,
-        HORIZ_FRAME_LATLON = 1,
-        HORIZ_FRAME_NEU = 2
-    };
-
     /// constructors
     Location_Class();
     Location_Class(int32_t latitude, int32_t longitude, int32_t alt_in_cm, ALT_FRAME frame);
@@ -45,26 +38,14 @@ public:
     static void set_terrain(AP_Terrain* terrain) { _terrain = terrain; }
 
     // setters
-    void set_latlng(int32_t new_lat, int32_t new_lng) { lat = new_lat; lng = new_lng; _horiz_frame = HORIZ_FRAME_LATLON; }
+    void set_latlng(int32_t new_lat, int32_t new_lng) { lat = new_lat; lng = new_lng; }
     void set_alt(int32_t alt_cm, ALT_FRAME frame);
 
     // get altitude frame
     ALT_FRAME get_alt_frame() const;
 
-    // get horizontal frame
-    HORIZ_FRAME get_horiz_frame() const { return _horiz_frame; }
-
-    // get altitude in it's native frame
-    int32_t get_alt_cm();
-
     /// get altitude in desired frame
     bool get_alt_cm(ALT_FRAME desired_frame, int32_t &ret_alt_cm) const;
-
-    /// get altitude above terrain in cm
-    int32_t alt_absolute_cm() const;
-    int32_t alt_above_home_cm() const;
-    int32_t alt_above_origin_cm() const;
-    int32_t alt_above_terrain_cm() const;
 
     /// get position as a vector from home or EKF origin
     Vector3f get_vector_from_home_NED() const;
@@ -98,13 +79,6 @@ public:
 private:
     static const AP_AHRS_NavEKF *_ahrs;
     static AP_Terrain *_terrain;
-
-    struct {
-        bool lat_lon_initialised : 1;
-    } _flags;
-
-    HORIZ_FRAME _horiz_frame;
-    Vector3f _ekf_offset_neu;
 };
 
 #endif /* LOCATION_H */

@@ -14,8 +14,7 @@ AP_Terrain *Location_Class::_terrain = NULL;
 #define LOCATION_SCALING_FACTOR_INV 89.83204953368922f
 
 /// constructors
-Location_Class::Location_Class() :
-    _horiz_frame(HORIZ_FRAME_UNSET)
+Location_Class::Location_Class()
 {
 }
 
@@ -25,14 +24,6 @@ Location_Class::Location_Class(int32_t latitude, int32_t longitude, int32_t alt_
     lng = longitude;
     options = 0;
     set_alt(alt_in_cm, frame);
-
-    // set flags
-    if (lat == 0 && lng == 0) {
-        _horiz_frame = HORIZ_FRAME_UNSET;
-    } else {
-        _horiz_frame = HORIZ_FRAME_LATLON;
-        _flags.lat_lon_initialised = true;
-    }
 }
 
 Location_Class::Location_Class(const Location& loc)
@@ -41,21 +32,10 @@ Location_Class::Location_Class(const Location& loc)
     lng = loc.lng;
     alt = loc.alt;
     options = loc.options;
-
-    // set flags
-    if (lat == 0 && lng == 0) {
-        _horiz_frame = HORIZ_FRAME_UNSET;
-    } else {
-        _horiz_frame = HORIZ_FRAME_LATLON;
-        _flags.lat_lon_initialised = true;
-    }
 }
 
 Location_Class::Location_Class(const Vector3f &ekf_offset_neu)
 {
-    // store position from ekf origin
-    _ekf_offset_neu = ekf_offset_neu;
-
     // store alt and alt frame
     set_alt(ekf_offset_neu.z, ALT_FRAME_ABOVE_ORIGIN);
 
@@ -66,16 +46,12 @@ Location_Class::Location_Class(const Vector3f &ekf_offset_neu)
             lat = ekf_origin.lat;
             lng = ekf_origin.lng;
             offset(ekf_offset_neu.x / 100.0f, ekf_offset_neu.y / 100.0f);
-            _flags.lat_lon_initialised = true;
         } else {
             hal.console->printf("Location_Class::failed to get origin\n");
         }
     } else {
         hal.console->printf("Location_Class::ahrs not set\n");
     }
-
-    // set flags
-    _horiz_frame = HORIZ_FRAME_NEU;
 }
 
 void Location_Class::set_alt(int32_t alt_cm, ALT_FRAME frame)
@@ -193,27 +169,6 @@ bool Location_Class::get_alt_cm(ALT_FRAME desired_frame, int32_t &ret_alt_cm) co
     }
 }
 
-/// get altitude above terrain in cm
-int32_t Location_Class::alt_absolute_cm() const
-{
-    return 0;
-}
-
-int32_t Location_Class::alt_above_home_cm() const
-{
-    return 0;
-}
-
-int32_t Location_Class::alt_above_origin_cm() const
-{
-    return 0;
-}
-
-int32_t Location_Class::alt_above_terrain_cm() const
-{
-    return 0;
-}
-
 /// get position as a vector from home or EKF origin
 Vector3f Location_Class::get_vector_from_home_NED() const
 {
@@ -222,13 +177,6 @@ Vector3f Location_Class::get_vector_from_home_NED() const
 
 bool Location_Class::get_vector_from_origin_NEU(Vector3f &vec_neu) const
 {
-    // if location is defined as an offset from the ekf origin, simply return it
-    if (_horiz_frame == HORIZ_FRAME_NEU) {
-        vec_neu.x = _ekf_offset_neu.x;
-        vec_neu.y = _ekf_offset_neu.y;
-        return true;
-    }
-
     // convert to neu
     Location ekf_origin;
     if (!_ahrs->get_NavEKF_const().getOriginLLH(ekf_origin)) {
