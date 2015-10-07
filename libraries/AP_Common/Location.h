@@ -11,9 +11,9 @@
 #include <AP_Progmem/AP_Progmem.h>
 #include <AP_Math/AP_Math.h>
 #include <AP_HAL/AP_HAL.h>
-#include <AP_AHRS/AP_AHRS.h>
-#include <AP_AHRS/AP_AHRS_NavEKF.h>
-#include <AP_Terrain/AP_Terrain.h>
+
+class AP_AHRS_NavEKF;
+class AP_Terrain;
 
 class Location_Class : public Location
 {
