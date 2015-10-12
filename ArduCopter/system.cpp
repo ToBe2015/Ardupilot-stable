@@ -193,6 +193,7 @@ void Copter::init_ardupilot()
     // initialise attitude and position controllers
     attitude_control.set_dt(MAIN_LOOP_SECONDS);
     pos_control.set_dt(MAIN_LOOP_SECONDS);
+    input_manager.set_dt(MAIN_LOOP_SECONDS);
 
     // init the optical flow sensor
     init_optflow();
