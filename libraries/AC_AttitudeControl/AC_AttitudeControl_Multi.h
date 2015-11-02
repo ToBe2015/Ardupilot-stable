@@ -27,6 +27,10 @@ public:
     // calculate total body frame throttle required to produce the given earth frame throttle
     float get_boosted_throttle(float throttle_in);
 
+    // get or set angle boost enable/disable
+    bool get_angle_boost_enabled() { return _angle_boost_enable; }
+    void set_angle_boost_enabled(bool enabled) { _angle_boost_enable = enabled; }
+
     // user settable parameters
     static const struct AP_Param::GroupInfo var_info[];
 
