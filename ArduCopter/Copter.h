@@ -233,6 +233,7 @@ private:
             enum HomeState home_state   : 2; // 18,19   // home status (unset, set, locked)
             uint8_t using_interlock     : 1; // 20      // aux switch motor interlock function is in use
             uint8_t motor_emergency_stop: 1; // 21      // motor estop switch, shuts off motors when enabled
+            uint8_t xcraft_horiz_control: 1; // 22      // xcraft horizontal controls (flips roll and yaw channels, reverses yaw control)
         };
         uint32_t value;
     } ap;
@@ -552,6 +553,7 @@ private:
     void set_pre_arm_rc_check(bool b);
     void set_using_interlock(bool b);
     void set_motor_emergency_stop(bool b);
+    void set_xcraft_controls(bool horizontal_controls);
     float get_smoothing_gain();
     void get_pilot_desired_lean_angles(float roll_in, float pitch_in, float &roll_out, float &pitch_out);
     float get_pilot_desired_yaw_rate(int16_t stick_angle);
@@ -855,6 +857,8 @@ private:
     void init_rc_out();
     void enable_motor_output();
     void read_radio();
+    int16_t get_roll_control_in();
+    int16_t get_yaw_control_in();
     void set_throttle_and_failsafe(uint16_t throttle_pwm);
     void set_throttle_zero_flag(int16_t throttle_control);
     void init_barometer(bool full_calibration);

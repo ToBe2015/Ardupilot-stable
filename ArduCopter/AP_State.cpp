@@ -131,3 +131,16 @@ void Copter::set_motor_emergency_stop(bool b)
         Log_Write_Event(DATA_MOTORS_EMERGENCY_STOP_CLEARED);
     }
 }
+
+void Copter::set_xcraft_controls(bool horizontal_controls)
+{
+    if (ap.xcraft_horiz_control != horizontal_controls) {
+        ap.xcraft_horiz_control = horizontal_controls;
+        // Log new status
+        if (ap.xcraft_horiz_control){
+            Log_Write_Event(DATA_XCRAFT_CONTROLS_HORIZONTAL);
+        } else {
+            Log_Write_Event(DATA_XCRAFT_CONTROLS_NORMAL);
+        }
+    }
+}

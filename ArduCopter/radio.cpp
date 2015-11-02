@@ -126,6 +126,18 @@ void Copter::read_radio()
     }
 }
 
+int16_t Copter::get_roll_control_in()
+{
+    // xcraft horizontal controls swap roll and yaw (and reverse yaw)
+    return (ap.xcraft_horiz_control ? channel_yaw->control_in : channel_roll->control_in);
+}
+
+int16_t Copter::get_yaw_control_in()
+{
+    // xcraft horizontal controls swap roll and yaw (and reverse yaw)
+    return (ap.xcraft_horiz_control ? -channel_roll->control_in : channel_yaw->control_in);
+}
+
 #define FS_COUNTER 3        // radio failsafe kicks in after 3 consecutive throttle values below failsafe_throttle_value
 void Copter::set_throttle_and_failsafe(uint16_t throttle_pwm)
 {

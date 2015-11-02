@@ -65,7 +65,8 @@ enum aux_sw_func {
     AUXSW_LOST_COPTER_SOUND =   30, // Play lost copter sound
     AUXSW_MOTOR_ESTOP =         31, // Emergency Stop Switch
     AUXSW_MOTOR_INTERLOCK =     32, // Motor On/Off switch
-    AUXSW_BRAKE =               33  // Brake flight mode
+    AUXSW_BRAKE =               33, // Brake flight mode
+    AUXSW_XCRAFT_CONTROLS =     50  // XCraft orientation
 };
 
 // Frame types
@@ -326,6 +327,8 @@ enum FlipState {
 #define DATA_ROTOR_RUNUP_COMPLETE           58  // Heli only
 #define DATA_ROTOR_SPEED_BELOW_CRITICAL     59  // Heli only
 #define DATA_EKF_ALT_RESET                  60
+#define DATA_XCRAFT_CONTROLS_NORMAL         70
+#define DATA_XCRAFT_CONTROLS_HORIZONTAL     71
 
 // Centi-degrees to radians
 #define DEGX100 5729.57795f
