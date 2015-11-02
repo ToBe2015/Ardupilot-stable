@@ -899,8 +899,8 @@ const AP_Param::Info Copter::var_info[] PROGMEM = {
     GOBJECT(attitude_control, "ATC_", AC_AttitudeControl_Heli),
 #else
     // @Group: ATC_
-    // @Path: ../libraries/AC_AttitudeControl/AC_AttitudeControl.cpp
-    GOBJECT(attitude_control, "ATC_", AC_AttitudeControl),
+    // @Path: ../libraries/AC_AttitudeControl/AC_AttitudeControl_Multi.cpp
+    GOBJECT(attitude_control, "ATC_", AC_AttitudeControl_Multi),
 #endif
 
     // @Group: POSCON_
