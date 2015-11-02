@@ -42,10 +42,10 @@ void Copter::loiter_run()
         update_simple_mode();
 
         // process pilot's roll and pitch input
-        wp_nav.set_pilot_desired_acceleration(channel_roll->control_in, channel_pitch->control_in);
+        wp_nav.set_pilot_desired_acceleration(get_roll_control_in(), channel_pitch->control_in);
 
         // get pilot's desired yaw rate
-        target_yaw_rate = get_pilot_desired_yaw_rate(channel_yaw->control_in);
+        target_yaw_rate = get_pilot_desired_yaw_rate(get_yaw_control_in());
 
         // get pilot desired climb rate
         target_climb_rate = get_pilot_desired_climb_rate(channel_throttle->control_in);

@@ -149,7 +149,7 @@ void Copter::poshold_run()
         update_simple_mode();
 
         // get pilot's desired yaw rate
-        target_yaw_rate = get_pilot_desired_yaw_rate(channel_yaw->control_in);
+        target_yaw_rate = get_pilot_desired_yaw_rate(get_yaw_control_in());
 
         // get pilot desired climb rate (for alt-hold mode and take-off)
         target_climb_rate = get_pilot_desired_climb_rate(channel_throttle->control_in);
@@ -185,7 +185,7 @@ void Copter::poshold_run()
         return;
     }else{
         // convert pilot input to lean angles
-        get_pilot_desired_lean_angles(channel_roll->control_in, channel_pitch->control_in, target_roll, target_pitch);
+        get_pilot_desired_lean_angles(get_roll_control_in(), channel_pitch->control_in, target_roll, target_pitch);
 
         // convert inertial nav earth-frame velocities to body-frame
         // To-Do: move this to AP_Math (or perhaps we already have a function to do this)
