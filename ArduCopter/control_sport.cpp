@@ -40,7 +40,7 @@ void Copter::sport_run()
     // get pilot's desired roll and pitch rates
 
     // calculate rate requests
-    target_roll_rate = channel_roll->control_in * g.acro_rp_p;
+    target_roll_rate = get_roll_control_in() * g.acro_rp_p;
     target_pitch_rate = channel_pitch->control_in * g.acro_rp_p;
 
     int32_t roll_angle = wrap_180_cd(ahrs.roll_sensor);
@@ -63,7 +63,7 @@ void Copter::sport_run()
     }
 
     // get pilot's desired yaw rate
-    target_yaw_rate = get_pilot_desired_yaw_rate(channel_yaw->control_in);
+    target_yaw_rate = get_pilot_desired_yaw_rate(get_yaw_control_in());
 
     // get pilot desired climb rate
     target_climb_rate = get_pilot_desired_climb_rate(channel_throttle->control_in);

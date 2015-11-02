@@ -31,7 +31,7 @@ void Copter::acro_run()
     }
 
     // convert the input to the desired body frame rate
-    get_pilot_desired_angle_rates(channel_roll->control_in, channel_pitch->control_in, channel_yaw->control_in, target_roll, target_pitch, target_yaw);
+    get_pilot_desired_angle_rates(get_roll_control_in(), channel_pitch->control_in, get_yaw_control_in(), target_roll, target_pitch, target_yaw);
 
     // get pilot's desired throttle
     pilot_throttle_scaled = get_pilot_desired_throttle(channel_throttle->control_in);

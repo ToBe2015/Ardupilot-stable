@@ -40,10 +40,10 @@ void Copter::stabilize_run()
 
     // convert pilot input to lean angles
     // To-Do: convert get_pilot_desired_lean_angles to return angles as floats
-    get_pilot_desired_lean_angles(channel_roll->control_in, channel_pitch->control_in, target_roll, target_pitch);
+    get_pilot_desired_lean_angles(get_roll_control_in(), channel_pitch->control_in, target_roll, target_pitch);
 
     // get pilot's desired yaw rate
-    target_yaw_rate = get_pilot_desired_yaw_rate(channel_yaw->control_in);
+    target_yaw_rate = get_pilot_desired_yaw_rate(get_yaw_control_in());
 
     // get pilot's desired throttle
     pilot_throttle_scaled = get_pilot_desired_throttle(channel_throttle->control_in);
