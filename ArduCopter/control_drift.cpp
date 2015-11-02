@@ -55,7 +55,7 @@ void Copter::drift_run()
     }
 
     // convert pilot input to lean angles
-    get_pilot_desired_lean_angles(channel_roll->control_in, channel_pitch->control_in, target_roll, target_pitch);
+    get_pilot_desired_lean_angles(get_roll_control_in(), channel_pitch->control_in, target_roll, target_pitch);
 
     // get pilot's desired throttle
     pilot_throttle_scaled = get_pilot_desired_throttle(channel_throttle->control_in);
@@ -74,7 +74,7 @@ void Copter::drift_run()
     roll_vel = constrain_float(roll_vel, -DRIFT_SPEEDLIMIT, DRIFT_SPEEDLIMIT);
     pitch_vel = constrain_float(pitch_vel, -DRIFT_SPEEDLIMIT, DRIFT_SPEEDLIMIT);
     
-    roll_input = roll_input * .96f + (float)channel_yaw->control_in * .04f;
+    roll_input = roll_input * .96f + (float)get_yaw_control_in() * .04f;
 
     //convert user input into desired roll velocity
     float roll_vel_error = roll_vel - (roll_input / DRIFT_SPEEDGAIN);
