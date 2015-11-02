@@ -27,9 +27,13 @@ public:
     // calculate total body frame throttle required to produce the given earth frame throttle
     float get_boosted_throttle(float throttle_in);
 
+    // user settable parameters
+    static const struct AP_Param::GroupInfo var_info[];
+
 protected:
 
     AP_MotorsMulticopter& _motors_multi;
+    AP_Int8               _angle_boost_enable;
 };
 
 #endif // AC_AttitudeControl_Multi_H
