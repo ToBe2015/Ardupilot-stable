@@ -245,6 +245,7 @@ void Copter::init_aux_switch_function(int8_t ch_option, uint8_t ch_flag)
         case AUXSW_LANDING_GEAR:
         case AUXSW_MOTOR_ESTOP:
         case AUXSW_XCRAFT_CONTROLS:
+        case AUXSW_ANGLE_BOOST:
             do_aux_switch_function(ch_option, ch_flag);
             break;
 
@@ -590,6 +591,10 @@ void Copter::do_aux_switch_function(int8_t ch_function, uint8_t ch_flag)
 
         case AUXSW_XCRAFT_CONTROLS:
             set_xcraft_controls(ch_flag == AUX_SWITCH_HIGH);
+            break;
+
+        case AUXSW_ANGLE_BOOST:
+            set_angle_boost(ch_flag == AUX_SWITCH_HIGH);
             break;
     }
 }

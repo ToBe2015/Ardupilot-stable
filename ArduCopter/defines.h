@@ -66,7 +66,8 @@ enum aux_sw_func {
     AUXSW_MOTOR_ESTOP =         31, // Emergency Stop Switch
     AUXSW_MOTOR_INTERLOCK =     32, // Motor On/Off switch
     AUXSW_BRAKE =               33, // Brake flight mode
-    AUXSW_XCRAFT_CONTROLS =     50  // XCraft orientation
+    AUXSW_XCRAFT_CONTROLS =     50, // XCraft orientation
+    AUXSW_ANGLE_BOOST =         51  // Angle Boost on/off
 };
 
 // Frame types
@@ -329,6 +330,8 @@ enum FlipState {
 #define DATA_EKF_ALT_RESET                  60
 #define DATA_XCRAFT_CONTROLS_NORMAL         70
 #define DATA_XCRAFT_CONTROLS_HORIZONTAL     71
+#define DATA_ANGLE_BOOST_ENABLED            72
+#define DATA_ANGLE_BOOST_DISABLED           73
 
 // Centi-degrees to radians
 #define DEGX100 5729.57795f

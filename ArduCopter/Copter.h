@@ -554,6 +554,7 @@ private:
     void set_using_interlock(bool b);
     void set_motor_emergency_stop(bool b);
     void set_xcraft_controls(bool horizontal_controls);
+    void set_angle_boost(bool enabled);
     float get_smoothing_gain();
     void get_pilot_desired_lean_angles(float roll_in, float pitch_in, float &roll_out, float &pitch_out);
     float get_pilot_desired_yaw_rate(int16_t stick_angle);

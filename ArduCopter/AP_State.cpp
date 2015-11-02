@@ -144,3 +144,18 @@ void Copter::set_xcraft_controls(bool horizontal_controls)
         }
     }
 }
+
+void Copter::set_angle_boost(bool enabled)
+{
+#if FRAME_CONFIG != HELI_FRAME
+    if (attitude_control.get_angle_boost_enabled() != enabled) {
+        attitude_control.set_angle_boost_enabled(enabled);
+        // Log new status
+        if (attitude_control.get_angle_boost_enabled()){
+            Log_Write_Event(DATA_ANGLE_BOOST_ENABLED);
+        } else {
+            Log_Write_Event(DATA_ANGLE_BOOST_DISABLED);
+        }
+    }
+#endif
+}
