@@ -56,6 +56,9 @@ public:
     // remove_all_motors - removes all motor definitions
     void                remove_all_motors();
 
+    // normalise_motors - Normalizes the roll, pitch and yaw factors so maximum magnitude is 0.5
+    void                normalise_motors();
+
     // setup_motors - configures the motors for a given frame type - should be overwritten by child classes
     virtual void        setup_motors() {
         remove_all_motors();
@@ -76,7 +79,7 @@ protected:
 
     float               _roll_factor[AP_MOTORS_MAX_NUM_MOTORS]; // each motors contribution to roll
     float               _pitch_factor[AP_MOTORS_MAX_NUM_MOTORS]; // each motors contribution to pitch
-    float               _yaw_factor[AP_MOTORS_MAX_NUM_MOTORS];  // each motors contribution to yaw (normally 1 or -1)
+    float               _yaw_factor[AP_MOTORS_MAX_NUM_MOTORS];  // each motors contribution to yaw
     uint8_t             _test_order[AP_MOTORS_MAX_NUM_MOTORS];  // order of the motors in the test sequence
 };
 

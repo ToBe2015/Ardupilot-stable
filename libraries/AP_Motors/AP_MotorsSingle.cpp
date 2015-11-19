@@ -135,8 +135,8 @@ uint16_t AP_MotorsSingle::get_motor_mask()
 
 void AP_MotorsSingle::output_armed_not_stabilizing()
 {
-    int16_t throttle_radio_output;                                  // total throttle pwm value, summed onto throttle channel minimum, typically ~1100-1900
-    int16_t out_min = _throttle_radio_min + _min_throttle;
+    float   throttle_radio_output;                                  // total throttle pwm value, summed onto throttle channel minimum, typically ~1100-1900
+    int16_t out_min = _throttle_radio_min + _min_motor_out;
 
     // initialize limits flags
     limit.roll_pitch = true;
@@ -149,12 +149,12 @@ void AP_MotorsSingle::output_armed_not_stabilizing()
         _throttle_control_input = thr_in_min;
         limit.throttle_lower = true;
     }
-    if (_throttle_control_input >= _max_throttle) {
-        _throttle_control_input = _max_throttle;
+    if (_throttle_control_input >= _max_motor_out) {
+        _throttle_control_input = _max_motor_out;
         limit.throttle_upper = true;
     }
 
-    throttle_radio_output = calc_throttle_radio_output();
+    throttle_radio_output = calc_thrust_to_pwm(calc_throttle_thrust());
 
     // front servo
     _servo1.servo_out = 0;
@@ -171,7 +171,7 @@ void AP_MotorsSingle::output_armed_not_stabilizing()
     _servo4.calc_pwm();
 
     if (throttle_radio_output >= out_min) {
-        throttle_radio_output = apply_thrust_curve_and_volt_scaling(throttle_radio_output, out_min, _throttle_radio_max);
+        throttle_radio_output = apply_thrust_curve_and_volt_scaling(throttle_radio_output);
     }
 
     hal.rcout->cork();
@@ -187,8 +187,8 @@ void AP_MotorsSingle::output_armed_not_stabilizing()
 // TODO pull code that is common to output_armed_not_stabilizing into helper functions
 void AP_MotorsSingle::output_armed_stabilizing()
 {
-    int16_t throttle_radio_output;                                  // total throttle pwm value, summed onto throttle channel minimum, typically ~1100-1900
-    int16_t out_min = _throttle_radio_min + _min_throttle;
+    float throttle_radio_output;                                  // total throttle pwm value, summed onto throttle channel minimum, typically ~1100-1900
+    int16_t out_min = _throttle_radio_min + _min_motor_out;
 
     // initialize limits flags
     limit.roll_pitch = false;
@@ -197,21 +197,21 @@ void AP_MotorsSingle::output_armed_stabilizing()
     limit.throttle_upper = false;
 
     // Throttle is 0 to 1000 only
-    int16_t thr_in_min = rel_pwm_to_thr_range(_min_throttle);
+    int16_t thr_in_min = rel_pwm_to_thr_range(_min_motor_out);
     if (_throttle_control_input <= thr_in_min) {
         _throttle_control_input = thr_in_min;
             limit.throttle_lower = true;
         }
-    if (_throttle_control_input >= _max_throttle) {
-        _throttle_control_input = _max_throttle;
+    if (_throttle_control_input >= _max_motor_out) {
+        _throttle_control_input = _max_motor_out;
         limit.throttle_upper = true;
     }
 
     // calculate throttle PWM
-    throttle_radio_output = calc_throttle_radio_output();
+    throttle_radio_output = calc_thrust_to_pwm(calc_throttle_thrust());
 
     // adjust for thrust curve and voltage scaling
-    throttle_radio_output = apply_thrust_curve_and_volt_scaling(throttle_radio_output, out_min, _throttle_radio_max);
+    throttle_radio_output = apply_thrust_curve_and_volt_scaling(throttle_radio_output);
 
     // ensure motor doesn't drop below a minimum value and stop
     throttle_radio_output = max(throttle_radio_output, out_min);

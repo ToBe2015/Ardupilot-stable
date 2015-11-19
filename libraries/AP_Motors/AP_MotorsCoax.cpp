@@ -121,9 +121,9 @@ void AP_MotorsCoax::output_min()
 
 void AP_MotorsCoax::output_armed_not_stabilizing()
 {
-    int16_t throttle_radio_output;                                  // total throttle pwm value, summed onto throttle channel minimum, typically ~1100-1900
-    int16_t out_min = _throttle_radio_min + _min_throttle;
-    int16_t motor_out;
+//    int16_t throttle_radio_output;                                  // total throttle pwm value, summed onto throttle channel minimum, typically ~1100-1900
+    int16_t out_min = _throttle_radio_min + _min_motor_out;
+    float motor_out;
 
     int16_t min_thr = rel_pwm_to_thr_range(_spin_when_armed_ramped);
 
@@ -137,14 +137,13 @@ void AP_MotorsCoax::output_armed_not_stabilizing()
         _throttle_control_input = min_thr;
         limit.throttle_lower = true;
     }
-    if (_throttle_control_input >= _max_throttle) {
-        _throttle_control_input = _max_throttle;
+    if (_throttle_control_input >= _max_motor_out) {
+        _throttle_control_input = _max_motor_out;
         limit.throttle_upper = true;
     }
 
-    throttle_radio_output = calc_throttle_radio_output();
-
-    motor_out = throttle_radio_output;
+    //throttle_radio_output = calc_throttle_radio_output();
+    motor_out = calc_throttle_thrust();
 
     _servo1.servo_out = 0;
     _servo1.calc_pwm();
@@ -153,7 +152,7 @@ void AP_MotorsCoax::output_armed_not_stabilizing()
     _servo2.calc_pwm();
 
     if (motor_out >= out_min) {
-        motor_out = apply_thrust_curve_and_volt_scaling(motor_out, out_min, _throttle_radio_max);
+        motor_out = apply_thrust_curve_and_volt_scaling(motor_out);
     }
 
     hal.rcout->cork();
@@ -170,8 +169,8 @@ void AP_MotorsCoax::output_armed_stabilizing()
 {
     int16_t yaw_pwm;                                                // yaw pwm value, initially calculated by calc_yaw_pwm() but may be modified after, +/- 400
     int16_t throttle_radio_output;                                  // total throttle pwm value, summed onto throttle channel minimum, typically ~1100-1900
-    int16_t out_min = _throttle_radio_min + _min_throttle;
-    int16_t motor_out[4];
+    int16_t out_min = _throttle_radio_min + _min_motor_out;
+    float motor_out[4];
 
     // initialize limits flags
     limit.roll_pitch = false;
@@ -179,19 +178,21 @@ void AP_MotorsCoax::output_armed_stabilizing()
     limit.throttle_lower = false;
     limit.throttle_upper = false;
 
-    int16_t thr_in_min = rel_pwm_to_thr_range(_min_throttle);
+    int16_t thr_in_min = rel_pwm_to_thr_range(_min_motor_out);
     if (_throttle_control_input <= thr_in_min) {
         _throttle_control_input = thr_in_min;
         limit.throttle_lower = true;
     }
-    if (_throttle_control_input >= _max_throttle) {
-        _throttle_control_input = _max_throttle;
+    if (_throttle_control_input >= _max_motor_out) {
+        _throttle_control_input = _max_motor_out;
         limit.throttle_upper = true;
     }
 
     // calculate throttle and yaw PWM
-    throttle_radio_output = calc_throttle_radio_output();
-    yaw_pwm = calc_yaw_pwm();
+//    throttle_radio_output = calc_throttle_radio_output();
+//    yaw_pwm = calc_yaw_pwm();
+    throttle_radio_output = calc_thrust_to_pwm(calc_throttle_thrust());
+    yaw_pwm = calc_thrust_to_pwm(calc_yaw_thrust());
 
     // motors
     motor_out[AP_MOTORS_MOT_3] = _rev_yaw*yaw_pwm + throttle_radio_output;
@@ -208,8 +209,8 @@ void AP_MotorsCoax::output_armed_stabilizing()
     _servo2.calc_pwm();
 
     // adjust for thrust curve and voltage scaling
-    motor_out[AP_MOTORS_MOT_3] = apply_thrust_curve_and_volt_scaling(motor_out[AP_MOTORS_MOT_3], out_min, _throttle_radio_max);
-    motor_out[AP_MOTORS_MOT_4] = apply_thrust_curve_and_volt_scaling(motor_out[AP_MOTORS_MOT_4], out_min, _throttle_radio_max);
+    motor_out[AP_MOTORS_MOT_3] = apply_thrust_curve_and_volt_scaling(motor_out[AP_MOTORS_MOT_3]);
+    motor_out[AP_MOTORS_MOT_4] = apply_thrust_curve_and_volt_scaling(motor_out[AP_MOTORS_MOT_4]);
 
     // ensure motors don't drop below a minimum value and stop
     motor_out[AP_MOTORS_MOT_3] = max(motor_out[AP_MOTORS_MOT_3],    out_min);
