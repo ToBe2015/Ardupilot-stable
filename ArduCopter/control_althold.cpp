@@ -70,19 +70,21 @@ void Copter::althold_run()
     switch (althold_state) {
 
     case AltHold_Disarmed:
+        motors.set_spool_desired_shut_down();
 
 #if FRAME_CONFIG == HELI_FRAME  // Helicopters always stabilize roll/pitch/yaw
         attitude_control.set_yaw_target_to_current_heading();
         // call attitude controller
         attitude_control.angle_ef_roll_pitch_rate_ef_yaw_smooth(target_roll, target_pitch, target_yaw_rate, get_smoothing_gain());
         attitude_control.set_throttle_out(0,false,g.throttle_filt);
-#else   // Multicopter do not stabilize roll/pitch/yaw when disarmed
-        attitude_control.set_throttle_out_unstabilized(0,true,g.throttle_filt);
+#else   // Multicopter use angle boost
+        attitude_control.set_throttle_out(get_throttle_pre_takeoff(channel_throttle->control_in),true,g.throttle_filt);
 #endif  // HELI_FRAME
         pos_control.relax_alt_hold_controllers(get_throttle_pre_takeoff(channel_throttle->control_in)-throttle_average);
         break;
 
     case AltHold_Takeoff:
+        motors.set_spool_desired_full_throttle();
 
         // initiate take-off
         if (!takeoff_state.running) {
@@ -106,19 +108,26 @@ void Copter::althold_run()
         break;
 
     case AltHold_Landed:
+        if(channel_throttle->control_in == g.throttle_min){
+            motors.set_spool_desired_spin_when_armed();
+        }else{
+            motors.set_spool_desired_full_throttle();
+        }
 
-#if FRAME_CONFIG == HELI_FRAME  // Helicopters always stabilize roll/pitch/yaw
         attitude_control.set_yaw_target_to_current_heading();
         // call attitude controller
         attitude_control.angle_ef_roll_pitch_rate_ef_yaw_smooth(target_roll, target_pitch, target_yaw_rate, get_smoothing_gain());
+#if FRAME_CONFIG == HELI_FRAME  // Helicopters arn't using angle boost
         attitude_control.set_throttle_out(get_throttle_pre_takeoff(channel_throttle->control_in),false,g.throttle_filt);
-#else   // Multicopter do not stabilize roll/pitch/yaw when disarmed
-        attitude_control.set_throttle_out_unstabilized(get_throttle_pre_takeoff(channel_throttle->control_in),true,g.throttle_filt);
+#else   // Multicopter use angle boost
+        motors.set_throttle_mix_zero();
+        attitude_control.set_throttle_out(get_throttle_pre_takeoff(channel_throttle->control_in),true,g.throttle_filt);
 #endif
         pos_control.relax_alt_hold_controllers(get_throttle_pre_takeoff(channel_throttle->control_in)-throttle_average);
         break;
 
     case AltHold_Flying:
+        motors.set_spool_desired_full_throttle();
         // call attitude controller
         attitude_control.angle_ef_roll_pitch_rate_ef_yaw_smooth(target_roll, target_pitch, target_yaw_rate, get_smoothing_gain());
 
