@@ -108,10 +108,10 @@ void Copter::set_land_complete_maybe(bool b)
     ap.land_complete_maybe = b;
 }
 
-// update_throttle_thr_mix - sets motors throttle_low_comp value depending upon vehicle state
+// update_throttle_rpy_mix - sets motors throttle_low_comp value depending upon vehicle state
 //  low values favour pilot/autopilot throttle over attitude control, high values favour attitude control over throttle
 //  has no effect when throttle is above hover throttle
-void Copter::update_throttle_thr_mix()
+void Copter::update_throttle_rpy_mix()
 {
 #if FRAME_CONFIG != HELI_FRAME
     // if disarmed or landed prioritise throttle

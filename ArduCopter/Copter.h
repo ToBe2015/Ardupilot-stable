@@ -845,7 +845,7 @@ private:
     bool land_complete_maybe();
     void update_land_and_crash_detectors();
     void update_land_detector();
-    void update_throttle_thr_mix();
+    void update_throttle_rpy_mix();
     void landinggear_update();
     void update_notify();
     void motor_test_output();
